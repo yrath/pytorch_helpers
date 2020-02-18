@@ -1,7 +1,6 @@
+# -*- coding: utf-8 -*-
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from torch import nn
 
 from collections import OrderedDict
 from itertools import chain
@@ -72,3 +71,9 @@ class Module(nn.Module):
     def parameters(self):
         return chain(*[transformation.parameters() for transformation in
             self.transformations.values() if hasattr(transformation, "parameters")])
+
+    def cuda(self):
+        for key, transformation in self.transformations.items():
+            if hasattr(transformation, "cuda"):
+                self.transformations[key] = transformation.cuda()
+        return self
