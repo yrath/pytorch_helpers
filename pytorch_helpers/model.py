@@ -3,7 +3,6 @@
 from torch import nn
 
 from collections import OrderedDict
-from itertools import chain
 
 
 class DeepOrderedDict(OrderedDict):
@@ -33,11 +32,17 @@ class Module(nn.Module):
         self.name = name
         self.inputs = inputs
         self.transformations = OrderedDict()
+        self.submodules = nn.ModuleDict()
+
+    def __repr__(self):
+        return "Module({})".format(self.name)
 
     def add_transformation(self, transformation, name):
         if name in self.transformations:
             raise Exception("Duplicate transformation name {} in module {}.".format(name, self.name))
         self.transformations[name] = transformation
+        if isinstance(transformation, nn.Module):
+            self.submodules[name] = transformation
 
     def add_torch_layer(self, name=None, inputs=None, module=None, activation=None):
         # if no layer name is given, use 'layer_<#transformations>'
@@ -67,13 +72,3 @@ class Module(nn.Module):
             out = transformation(*inputs)
             outputs[name] = out
         return outputs
-
-    def parameters(self):
-        return chain(*[transformation.parameters() for transformation in
-            self.transformations.values() if hasattr(transformation, "parameters")])
-
-    def cuda(self):
-        for key, transformation in self.transformations.items():
-            if hasattr(transformation, "cuda"):
-                self.transformations[key] = transformation.cuda()
-        return self
