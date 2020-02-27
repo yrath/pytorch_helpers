@@ -25,14 +25,23 @@ class DeepOrderedDict(OrderedDict):
                 return output
 
 
+class LambdaModule(nn.Module):
+
+    def __init__(self, lambd):
+        super(LambdaModule, self).__init__()
+        self.lambd = lambd
+
+    def forward(self, x):
+        return self.lambd(x)
+
+
 class Module(nn.Module):
 
     def __init__(self, name, inputs=None):
         super(Module, self).__init__()
         self.name = name
         self.inputs = inputs
-        self.transformations = OrderedDict()
-        self.submodules = nn.ModuleDict()
+        self.transformations = nn.ModuleDict()
 
     def __repr__(self):
         return "Module({})".format(self.name)
@@ -41,8 +50,6 @@ class Module(nn.Module):
         if name in self.transformations:
             raise Exception("Duplicate transformation name {} in module {}.".format(name, self.name))
         self.transformations[name] = transformation
-        if isinstance(transformation, nn.Module):
-            self.submodules[name] = transformation
 
     def add_torch_layer(self, name=None, inputs=None, module=None, activation=None):
         # if no layer name is given, use 'layer_<#transformations>'
@@ -50,13 +57,13 @@ class Module(nn.Module):
             name = "layer_{}".format(len(self.transformations))
         # by default, new layer takes preceeding transformation as input
         if inputs is None:
-            inputs = [next(reversed(self.transformations))]
+            inputs = [next(reversed(self.transformations.keys()))]
 
         layer = Module(name, inputs)
         if module is not None:
             layer.add_transformation(module, "module")
         if activation is not None:
-            layer.add_transformation(activation, "activation")
+            layer.add_transformation(LambdaModule(activation), "activation")
         self.add_transformation(layer, name)
 
     def forward(self, *x):
