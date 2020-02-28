@@ -49,7 +49,7 @@ class NNTrainer(object):
                 output = outputs.deep_apply(lambda x: x[next(reversed(x))])
 
                 for key, metric in metrics.items():
-                    metric_value = metric.batch(inputs, output, weights, labels)
+                    metric_value = metric.batch(inputs, output, weights, labels, self.model)
                     if train and key == optim_metric:
                         metric_value.backward()
                         self.optimizer.step()

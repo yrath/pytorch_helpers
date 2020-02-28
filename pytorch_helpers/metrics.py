@@ -12,7 +12,7 @@ class Metric(object):
     def reset(self):
         self.values = []
 
-    def batch(self, inputs, outputs, weights, labels):
+    def batch(self, inputs, outputs, weights, labels, model):
         raise NotImplementedError()
 
     def aggregate(self):
@@ -25,7 +25,7 @@ class TorchLoss(Metric):
         super(TorchLoss, self).__init__()
         self.loss_func = loss_func
 
-    def batch(self, inputs, outputs, weights, labels):
+    def batch(self, inputs, outputs, weights, labels, model):
         loss = self.loss_func(outputs, labels)
         loss = torch.mean(weights * loss)
         self.values.append(loss.cpu().detach().numpy())
@@ -34,7 +34,7 @@ class TorchLoss(Metric):
 
 class Accuracy(Metric):
 
-    def batch(self, inputs, outputs, weights, labels):
+    def batch(self, inputs, outputs, weights, labels, model):
         _, predictions = outputs.max(1)
         acc = ((labels == predictions) * weights).sum() / weights.sum()
         self.values.append(acc.cpu().detach().numpy())
@@ -50,7 +50,7 @@ class ConfusionMatrix(Metric):
     def reset(self):
         self.matrix = np.zeros((self.n_dim, self.n_dim))
 
-    def batch(self, inputs, outputs, weights, labels):
+    def batch(self, inputs, outputs, weights, labels, model):
         _, predictions = outputs.max(1)
         for pred, weight, label in zip(predictions.cpu(), weights.cpu(), labels.cpu()):
             self.matrix[pred, label] += 1
