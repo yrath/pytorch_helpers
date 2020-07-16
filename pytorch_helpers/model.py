@@ -37,7 +37,7 @@ class LambdaModule(nn.Module):
 
 class NormalizationLayer(nn.Module):
 
-    def init__(self, n_inputs):
+    def __init__(self, n_inputs):
         super(NormalizationLayer, self).__init__()
         self.mean = nn.Parameter(Tensor(1, n_inputs), requires_grad=False)
         self.stddev = nn.Parameter(Tensor(1, n_inputs), requires_grad=False)
