@@ -31,6 +31,7 @@ class NNTrainer(object):
                 optim_metric, metrics
             ))
         best_loss = inf
+        best_epoch = -1
 
         def run_epoch(data_loader, train=False):
             for metric in metrics.values():
@@ -70,12 +71,14 @@ class NNTrainer(object):
             valid_loss = results["valid"][-1][optim_metric]
             if valid_loss < best_loss:
                 best_loss = valid_loss
+                best_epoch = epoch
                 if save_path is not None:
                     torch.save({"epoch": epoch, "loss": best_loss, "model_state_dict": self.model.state_dict(),
                         "optimizer_state_dict": self.optimizer.state_dict()}, save_path)
 
             print("Training loss: {:.3f}".format(results["train"][-1][optim_metric]))
             print("Validation loss: {:.3f}".format(valid_loss))
+        results["meta"] = {"best_loss": best_loss, "best_epoch": best_epoch}
 
         # restore best model
         if save_path is not None:
