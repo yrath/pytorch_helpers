@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from torch import nn
+from torch import nn, Tensor
 
 from collections import OrderedDict
 
@@ -33,6 +33,17 @@ class LambdaModule(nn.Module):
 
     def forward(self, x):
         return self.lambd(x)
+
+
+class NormalizationLayer(nn.Module):
+
+    def init__(self, n_inputs):
+        super(NormalizationLayer, self).__init__()
+        self.mean = nn.Parameter(Tensor(1, n_inputs), requires_grad=False)
+        self.stddev = nn.Parameter(Tensor(1, n_inputs), requires_grad=False)
+
+    def forward(self, x):
+        return (x - self.mean) / self.stddev
 
 
 class Module(nn.Module):
