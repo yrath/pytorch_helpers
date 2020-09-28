@@ -11,8 +11,7 @@ class NNTrainer(object):
         self.model = model
         self.scheduler = None
 
-        if torch.cuda.is_available():
-            self.use_gpu = True
+        self.use_gpu = torch.cuda.is_available()
 
     def add_optimizer(self, optimizer="SGD", **kwargs):
         if isinstance(optimizer, str):
